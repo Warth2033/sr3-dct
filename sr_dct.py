@@ -130,13 +130,13 @@ if __name__ == "__main__":
                         diffusion.test(continous=False)
                         visuals = diffusion.get_current_visuals()
                         sr_dct = visuals['SR']  # uint8
-                        hr_dct = visuals['HR']  # uint8
-                        fake_dct = visuals['INF']  # uint8
-
-                        sr_img = Dct_to_image(sr_dct)  # uint8
-                        hr_img = Dct_to_image(hr_dct)  # uint8
+                        hr_dct = visuals['HR'][0]  # uint8
+                        fake_dct = visuals['INF'][0]  # uint8
+                        from data.Dct_to_image import dct_to_image
+                        sr_img = dct_to_image(sr_dct)  # uint8
+                        hr_img = dct_to_image(hr_dct)  # uint8
                         lr_img = Metrics.tensor2img(visuals['LR'])  # uint8
-                        fake_img = Dct_to_image(fake_dct)  # uint8
+                        fake_img = dct_to_image(fake_dct)  # uint8
 
                         # 保存生成的图像
                         Metrics.save_img(

@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "args": ["-p", "train", "-c", "config/sr_sr3_64_512.json"],
+            "args": ["-p", "train", "-c", "config/sr_sr3_16_128.json"],
             "console": "integratedTerminal"
         },
         {

@@ -41,7 +41,7 @@
         "unet": {
             "in_channel": 384, // 6 dct
             "out_channel": 192, // 3 dct
-            "inner_channel": 64,
+            "inner_channel": 64, // 有待调整
             "channel_multiplier": [
                 1,
                 2,
@@ -76,9 +76,9 @@
         }
     },
     "train": {
-        "n_iter": 10, //1000000,
-        "val_freq": 1e5,
-        "save_checkpoint_freq": 1e5,
+        "n_iter": 1000000,
+        "val_freq": 1e4,
+        "save_checkpoint_freq": 1e4,
         "print_freq": 200,
         "optimizer": {
             "type": "adam",
