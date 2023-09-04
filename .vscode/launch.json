@@ -5,10 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: 当前文件",
+            "name": "sr",
             "type": "python",
             "request": "launch",
             "program": "${file}",
+            "args": ["-p", "train", "-c", "config/sr_sr3_64_512.json"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Prepare",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "args": ["--path", "data_origin/train_512_GT/", "--out", "dataset/tk_train_test", "--size", "128,512", "-l"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "LRHR",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            // "args": ["--path", "data_origin/val_512_GT/", "--out", "dataset/tk_val", "--size", "128,512", "-l"],
             "console": "integratedTerminal"
         }
     ]

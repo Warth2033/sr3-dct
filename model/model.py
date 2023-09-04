@@ -47,7 +47,8 @@ class DDPM(BaseModel):
 
     def optimize_parameters(self):
         self.optG.zero_grad()
-        l_pix = self.netG(self.data)
+        l_pix = self.netG(self.data) # self.netG通常是一个生成器网络（通常是一个深度学习模型），而self.data是输入数据。
+                                    # 这一行的目的是通过生成器网络self.netG对输入数据self.data进行前向传播（forward pass）
         # need to average in multi-gpu
         b, c, h, w = self.data['HR'].shape
         l_pix = l_pix.sum()/int(b*c*h*w)

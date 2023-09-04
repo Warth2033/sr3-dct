@@ -240,7 +240,7 @@ class GaussianDiffusion(nn.Module):
             x_recon = self.denoise_fn(x_noisy, continuous_sqrt_alpha_cumprod)
         else:
             x_recon = self.denoise_fn(
-                torch.cat([x_in['SR'], x_noisy], dim=1), continuous_sqrt_alpha_cumprod)
+                torch.cat([x_in['SR'], x_noisy], dim=1), continuous_sqrt_alpha_cumprod) # 报错的关键！！！！！！！！！！！！！
 
         loss = self.loss_func(noise, x_recon)
         return loss
