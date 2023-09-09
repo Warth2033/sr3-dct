@@ -130,4 +130,7 @@ dmypy.json
 .pyre/
 
 *.lmdb
-/data_origin/
+data_origin/*
+dataset/*
+experiments/*
+misc/*
