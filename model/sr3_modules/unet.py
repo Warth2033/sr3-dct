@@ -194,44 +194,45 @@ class ResnetBlocWithAttn(nn.Module):
 class UNet(nn.Module):
     def __init__(
         self,
-        in_channel=6,  # 输入通道数
-        out_channel=3,  # 输出通道数
-        inner_channel=32,  # 内部通道数
-        norm_groups=32,  # 归一化组数
-        channel_mults=(1, 2, 4, 8, 8),  # 通道倍数
-        attn_res=(8),  # 使用注意力机制的分辨率
-        res_blocks=3,  # 残差块数量
-        dropout=0,  # dropout率
-        with_noise_level_emb=True,  # 是否使用噪声级别嵌入
-        image_size=128,  # 图像大小
+        in_channel=6,  # 输入通道数，默认为6
+        out_channel=3,  # 输出通道数，默认为3
+        inner_channel=32,  # 内部通道数，即网络中间层的通道数，默认为32
+        norm_groups=32,  # 归一化组数，用于GroupNorm层，默认为32
+        channel_mults=(1, 2, 4, 8, 8),  # 通道倍数，用于定义各层的通道数，默认为(1, 2, 4, 8, 8)
+        attn_res=(8),  # 使用注意力机制的分辨率，默认为8
+        res_blocks=3,  # 残差块数量，默认为3
+        dropout=0,  # dropout率，默认为0
+        with_noise_level_emb=True,  # 是否使用噪声级别嵌入，默认为True
+        image_size=128,  # 图像大小，默认为128
     ):
-        super().__init__()
+        super().__init__()  # 调用父类的初始化函数
 
         # 如果使用噪声级别嵌入
         if with_noise_level_emb:
-            noise_level_channel = inner_channel
-            # 定义噪声级别的多层感知机
+            noise_level_channel = inner_channel  # 设置噪声级别通道数为内部通道数
+            # 定义噪声级别的多层感知机，用于生成噪声级别嵌入
             self.noise_level_mlp = nn.Sequential(
-                PositionalEncoding(inner_channel),
-                nn.Linear(inner_channel, inner_channel * 4),
-                Swish(),
-                nn.Linear(inner_channel * 4, inner_channel),
+                PositionalEncoding(inner_channel),  # 位置编码层
+                nn.Linear(inner_channel, inner_channel * 4),  # 线性层
+                Swish(),  # Swish激活函数
+                nn.Linear(inner_channel * 4, inner_channel),  # 线性层
             )
-        else:
-            noise_level_channel = None
-            self.noise_level_mlp = None
+        else: # 如果不使用噪声级别嵌入
+            noise_level_channel = None  # 则设置噪声级别通道数为None
+            self.noise_level_mlp = None  # 设置噪声级别多层感知机为None
+
 
         # 定义下采样层
-        num_mults = len(channel_mults)
-        pre_channel = inner_channel
-        feat_channels = [pre_channel]
-        now_res = image_size
-        downs = [nn.Conv2d(in_channel, inner_channel, kernel_size=3, padding=1)]
-        for ind in range(num_mults):
-            is_last = ind == num_mults - 1
-            use_attn = now_res in attn_res
-            channel_mult = inner_channel * channel_mults[ind]
-            for _ in range(0, res_blocks):
+        num_mults = len(channel_mults)  # 获取通道倍数的长度
+        pre_channel = inner_channel  # 设置前一个通道数为内部通道数
+        feat_channels = [pre_channel]  # 初始化特征通道列表
+        now_res = image_size  # 设置当前分辨率为图像大小
+        downs = [nn.Conv2d(in_channel, inner_channel, kernel_size=3, padding=1)]  # 初始化下采样层列表，添加第一个卷积层
+        for ind in range(num_mults):  # 遍历通道倍数列表
+            is_last = ind == num_mults - 1  # 判断是否是最后一个
+            use_attn = now_res in attn_res  # 判断当前分辨率是否在注意力分辨率列表中
+            channel_mult = inner_channel * channel_mults[ind]  # 计算当前层的通道数
+            for _ in range(0, res_blocks):  # 添加残差块
                 downs.append(
                     ResnetBlocWithAttn(
                         pre_channel,
@@ -242,13 +243,13 @@ class UNet(nn.Module):
                         with_attn=use_attn,
                     )
                 )
-                feat_channels.append(channel_mult)
-                pre_channel = channel_mult
-            if not is_last:
-                downs.append(Downsample(pre_channel))
-                feat_channels.append(pre_channel)
-                now_res = now_res // 2
-        self.downs = nn.ModuleList(downs)
+                feat_channels.append(channel_mult)  # 添加当前层的通道数到特征通道列表
+                pre_channel = channel_mult  # 更新前一个通道数
+            if not is_last:  # 如果不是最后一个
+                downs.append(Downsample(pre_channel))  # 添加下采样层
+                feat_channels.append(pre_channel)  # 添加当前层的通道数到特征通道列表
+                now_res = now_res // 2  # 更新当前分辨率
+        self.downs = nn.ModuleList(downs)  # 将下采样层列表转换为模块列表
 
         # 定义中间层
         self.mid = nn.ModuleList(
@@ -273,61 +274,61 @@ class UNet(nn.Module):
         )
 
         # 定义上采样层
-        ups = []
-        for ind in reversed(range(num_mults)):
-            is_last = ind < 1
-            use_attn = now_res in attn_res
-            channel_mult = inner_channel * channel_mults[ind]
-            for _ in range(0, res_blocks + 1):
+        ups = []  # 初始化一个列表，用于存储上采样层
+        for ind in reversed(range(num_mults)):  # 反向遍历通道倍数列表
+            is_last = ind < 1  # 判断是否是最后一个
+            use_attn = now_res in attn_res  # 判断当前分辨率是否在注意力分辨率列表中
+            channel_mult = inner_channel * channel_mults[ind]  # 计算当前层的通道数
+            for _ in range(0, res_blocks + 1):  # 添加残差块
                 ups.append(
                     ResnetBlocWithAttn(
-                        pre_channel + feat_channels.pop(),
-                        channel_mult,
-                        noise_level_emb_dim=noise_level_channel,
-                        norm_groups=norm_groups,
-                        dropout=dropout,
-                        with_attn=use_attn,
+                        pre_channel + feat_channels.pop(),  # 输入通道数为前一个通道数加上特征通道列表的最后一个元素
+                        channel_mult,  # 输出通道数
+                        noise_level_emb_dim=noise_level_channel,  # 噪声级别嵌入维度
+                        norm_groups=norm_groups,  # 归一化组数
+                        dropout=dropout,  # dropout率
+                        with_attn=use_attn,  # 是否使用注意力机制
                     )
                 )
-                pre_channel = channel_mult
-            if not is_last:
-                ups.append(Upsample(pre_channel))
-                now_res = now_res * 2
+                pre_channel = channel_mult  # 更新前一个通道数
+            if not is_last:  # 如果不是最后一个
+                ups.append(Upsample(pre_channel))  # 添加上采样层
+                now_res = now_res * 2  # 更新当前分辨率
 
-        self.ups = nn.ModuleList(ups)
+        self.ups = nn.ModuleList(ups)  # 将上采样层列表转换为模块列表
 
         # 定义最终的卷积层
         self.final_conv = Block(
             pre_channel, default(out_channel, in_channel), groups=norm_groups
-        )
+        )  # 最终的卷积层，使用Block模块
 
     # 前向传播函数
     def forward(self, x, time):
         # 如果存在噪声级别的多层感知机，则获取噪声级别
         t = self.noise_level_mlp(time) if exists(self.noise_level_mlp) else None
 
-        feats = []
+        feats = []  # 初始化一个列表，用于存储各层的特征
         # 通过下采样层
-        for layer in self.downs:
-            if isinstance(layer, ResnetBlocWithAttn):
-                x = layer(x, t)
+        for layer in self.downs:  # 遍历下采样层列表
+            if isinstance(layer, ResnetBlocWithAttn):  # 如果当前层是带有注意力的残差块
+                x = layer(x, t)  # 通过当前层，并传入噪声级别嵌入
             else:
-                x = layer(x)
-            feats.append(x)
+                x = layer(x)  # 否则直接通过当前层
+            feats.append(x)  # 将当前层的输出添加到特征列表中
 
         # 通过中间层
-        for layer in self.mid:
-            if isinstance(layer, ResnetBlocWithAttn):
-                x = layer(x, t)
+        for layer in self.mid:  # 遍历中间层列表
+            if isinstance(layer, ResnetBlocWithAttn):  # 如果当前层是带有注意力的残差块
+                x = layer(x, t)  # 通过当前层，并传入噪声级别嵌入
             else:
-                x = layer(x)
+                x = layer(x)  # 否则直接通过当前层
 
         # 通过上采样层
-        for layer in self.ups:
-            if isinstance(layer, ResnetBlocWithAttn):
-                x = layer(torch.cat((x, feats.pop()), dim=1), t)
+        for layer in self.ups:  # 遍历上采样层列表
+            if isinstance(layer, ResnetBlocWithAttn):  # 如果当前层是带有注意力的残差块
+                x = layer(torch.cat((x, feats.pop()), dim=1), t)  # 通过当前层，并传入噪声级别嵌入和之前存储的特征
             else:
-                x = layer(x)
+                x = layer(x)  # 否则直接通过当前层
 
         # 通过最终的卷积层并返回结果
         return self.final_conv(x)
