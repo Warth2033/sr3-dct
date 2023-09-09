@@ -134,3 +134,5 @@ data_origin/*
 dataset/*
 experiments/*
 misc/*
+**/.DS_Store
+**/._*
