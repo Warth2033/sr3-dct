@@ -35,7 +35,14 @@ def tensor2img(tensor, out_type=np.uint8, min_max=(-1, 1)):
 
 
 def save_img(img, img_path, mode='RGB'):
-    cv2.imwrite(img_path, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+    if mode == 'RGB':
+        cv2.imwrite(img_path, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+    elif mode == 'YCbCr':
+        y = img[:, :, 0]
+        cb = img[:, :, 1]
+        cr = img[:, :, 2]
+        img = np.stack((y, cr, cb), axis=2)
+        cv2.imwrite(img_path, cv2.cvtColor(img, cv2.COLOR_YCrCb2BGR))
     # cv2.imwrite(img_path, img)
 
 
