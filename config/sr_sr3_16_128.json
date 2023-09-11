@@ -1,8 +1,8 @@
 {
-    "name": "sr_tk_dct",
+    "name": "sr_tk_dct_16_128",
     "phase": "train", // train or val
     "gpu_ids": [
-        0,1
+        0
     ],
     "path": { //set the path
         "log": "logs",
@@ -41,7 +41,7 @@
         "unet": {
             "in_channel": 384, // 6 dct
             "out_channel": 192, // 3 dct
-            "inner_channel": 64, // 有待调整
+            "inner_channel": 1024, // 有待调整
             "channel_multiplier": [
                 1,
                 2,
@@ -50,7 +50,7 @@
                 8
             ],
             "attn_res": [
-                16// 16 dct
+                4// 16 dct
             ],
             "res_blocks": 2,
             "dropout": 0.2
@@ -91,6 +91,6 @@
         }
     },
     "wandb": {
-        "project": "sr_tk_dct"
+        "project": "sr_tk_dct_16_128"
     }
 }

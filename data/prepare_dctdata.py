@@ -22,9 +22,7 @@ def resize_and_convert(img, size, resample):
     return img
 
 
-def image_convert_bytes(img):
-    # if img.mode == 'YCbCr':
-    #     img = img.convert('RGB')  # YCbCr无法保存为png，转换为RGB模式
+def image_convert_bytes(img, mode):
     buffer = BytesIO()
     img.save(buffer, format='png')
     return buffer.getvalue()
@@ -32,15 +30,16 @@ def image_convert_bytes(img):
 def dct_convert_bytes(dct_coeffs_reshaped):
     return dct_coeffs_reshaped.tobytes()
 
-def resize_multiple(img, sizes=(16, 128), resample=Image.BICUBIC, lmdb_save=False):
+def resize_multiple(img, sizes=(16, 128), resample=Image.BICUBIC, lmdb_save=False, mode='RGB'):
     lr_img = resize_and_convert(img, sizes[0], resample)
     hr_img = resize_and_convert(img, sizes[1], resample)
     sr_img = resize_and_convert(lr_img, sizes[1], resample)
     # print("resize_multiple resize后hr图像像素值：", list(hr_img.getdata()))
     # 计算DCT系数并进行Zigzag重新排列
     def compute_dct_reshaped(image):
-        if image.mode != 'YCbCr':
-            image = image.convert('YCbCr')
+        if mode=='YCbCr':
+            if image.mode != 'YCbCr':
+                image = image.convert('YCbCr')
             # np.savetxt('prepare中间数据/hr（Image对象）（Ycbcr通道）.csv', image.getdata(), delimiter=',')#####################
         # image = Image.open(BytesIO(image))  # 从字节串创建图像对象
         img_array = np.array(image, dtype=np.uint8)
@@ -65,9 +64,9 @@ def resize_multiple(img, sizes=(16, 128), resample=Image.BICUBIC, lmdb_save=Fals
         sr_dct_reshaped = compute_dct_reshaped(sr_img)
         hr_dct_reshaped = dct_convert_bytes(hr_dct_reshaped)
         sr_dct_reshaped = dct_convert_bytes(sr_dct_reshaped)
-        lr_img = image_convert_bytes(lr_img)
-        hr_img = image_convert_bytes(hr_img)
-        sr_img = image_convert_bytes(sr_img)
+        lr_img = image_convert_bytes(lr_img, mode)
+        hr_img = image_convert_bytes(hr_img, mode)
+        sr_img = image_convert_bytes(sr_img, mode)
         return lr_img, hr_img, sr_img, hr_dct_reshaped, sr_dct_reshaped
     return lr_img, hr_img, sr_img
 
@@ -110,11 +109,11 @@ def zigzag_flatten(matrix):
     return result
 
 
-def resize_worker(img_file, sizes, resample, lmdb_save=False):
+def resize_worker(img_file, sizes, resample, lmdb_save=False, mode='RGB'):
     img = Image.open(img_file)
     img = img.convert('RGB')  # 转换到RGB色域
     out = resize_multiple(
-        img, sizes=sizes, resample=resample, lmdb_save=lmdb_save)
+        img, sizes=sizes, resample=resample, lmdb_save=lmdb_save, mode=mode)
     return img_file.name.split('.')[0], out
 
 class WorkingContext():
@@ -171,9 +170,9 @@ def all_threads_inactive(worker_threads):
             return False
     return True
 
-def prepare(img_path, out_path, n_worker, sizes=(16, 128), resample=Image.BICUBIC, lmdb_save=False):
+def prepare(img_path, out_path, n_worker, sizes=(16, 128), resample=Image.BICUBIC, lmdb_save=False, mode='RGB'):
     resize_fn = partial(resize_worker, sizes=sizes,
-                        resample=resample, lmdb_save=lmdb_save)
+                        resample=resample, lmdb_save=lmdb_save, mode=mode)
     files = [p for p in Path(
         '{}'.format(img_path)).glob(f'**/*')]
 
@@ -248,6 +247,7 @@ if __name__ == '__main__':
     parser.add_argument('--resample', type=str, default='bicubic')
     # default save in png format
     parser.add_argument('--lmdb', '-l', action='store_true')
+    parser.add_argument('--mode', '-m', type=str, default='RGB')
 
     args = parser.parse_args()
 
@@ -257,4 +257,4 @@ if __name__ == '__main__':
 
     args.out = '{}_{}_{}'.format(args.out, sizes[0], sizes[1])
     prepare(args.path, args.out, args.n_worker,
-            sizes=sizes, resample=resample, lmdb_save=args.lmdb)
+            sizes=sizes, resample=resample, lmdb_save=args.lmdb, mode=args.mode)
