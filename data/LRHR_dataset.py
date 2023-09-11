@@ -104,8 +104,8 @@ class LRHRDataset(Dataset):
                         )
                 img_HR = Image.open(BytesIO(hr_img_bytes)).convert("RGB")
                 img_SR = Image.open(BytesIO(sr_img_bytes)).convert("RGB")
-                dct_HR = np.array(np.frombuffer(hr_dct_bytes, dtype=np.float16).reshape(64 * 3, self.r_res // 8, self.r_res // 8))
-                dct_SR = np.array(np.frombuffer(sr_dct_bytes, dtype=np.float16).reshape(64 * 3, self.r_res // 8, self.r_res // 8))
+                dct_HR = np.array(np.frombuffer(hr_dct_bytes, dtype=np.float32).reshape(64 * 3, self.r_res // 8, self.r_res // 8))
+                dct_SR = np.array(np.frombuffer(sr_dct_bytes, dtype=np.float32).reshape(64 * 3, self.r_res // 8, self.r_res // 8))
                 if self.need_LR:
                     img_LR = Image.open(BytesIO(lr_img_bytes)).convert("RGB")
         else:

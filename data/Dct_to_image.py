@@ -10,7 +10,7 @@ def dct_to_image(dct):
         # print(type(arr))  # 打印arr的类型
         # print(arr.shape)  # 打印arr的形状
         n = 8  # 数组的维度
-        matrix = np.zeros((n, n), dtype=np.float16)
+        matrix = np.zeros((n, n), dtype=np.float32)
         row, col = 0, 0
         going_up = True
 
@@ -52,10 +52,10 @@ def dct_to_image(dct):
         for i in range(dct.shape[1]):
             for j in range(dct.shape[2]):
                 for c in range(3):  # 对于每个颜色通道
-                    reshaped_block = np.zeros((64), dtype=np.float16)
+                    reshaped_block = np.zeros((64), dtype=np.float32)
                     reshaped_block = dct[c*64:(c+1)*64, i, j]
                     
-                    block = np.zeros((8, 8), dtype=np.float16)
+                    block = np.zeros((8, 8), dtype=np.float32)
                     block = zigzag_unflatten(reshaped_block)
                     
                     # 执行逆DCT变换

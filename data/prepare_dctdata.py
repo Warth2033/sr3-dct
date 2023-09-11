@@ -45,7 +45,7 @@ def resize_multiple(img, sizes=(16, 128), resample=Image.BICUBIC, lmdb_save=Fals
         # image = Image.open(BytesIO(image))  # 从字节串创建图像对象
         img_array = np.array(image, dtype=np.uint8)
         # np.savetxt('prepare中间数据/hr（数组）（Ycbcr通道）.csv', img_array.reshape(-1, 3), delimiter=',')#####################
-        dct_coeffs_reshaped = np.zeros((64 * 3, img_array.shape[0] // 8, img_array.shape[1] // 8), dtype=np.float16)
+        dct_coeffs_reshaped = np.zeros((64 * 3, img_array.shape[0] // 8, img_array.shape[1] // 8), dtype=np.float32)
         for c in range(3):  # 对每个通道进行处理
             for i in range(0, img_array.shape[0], 8):
                 for j in range(0, img_array.shape[1], 8):
@@ -73,7 +73,7 @@ def resize_multiple(img, sizes=(16, 128), resample=Image.BICUBIC, lmdb_save=Fals
 
 def zigzag_flatten(matrix):
     m, n = matrix.shape
-    result = np.empty(m * n, dtype=np.float16)  # 创建结果数组
+    result = np.empty(m * n, dtype=np.float32)  # 创建结果数组
 
     row, col = 0, 0
     going_up = True
