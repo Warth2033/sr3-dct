@@ -78,7 +78,7 @@ class Upsample(nn.Module):
 class Downsample(nn.Module):
     def __init__(self, dim):
         super().__init__()
-        self.conv = nn.Conv2d(dim, dim, 3, 2, 1) # 卷积层将输入数据的高度和宽度减少到一半
+        self.conv = nn.Conv2d(dim, dim, 3, 2, 1)
 
     def forward(self, x):
         return self.conv(x)

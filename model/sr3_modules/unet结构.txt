@@ -1,0 +1,3 @@
+{nn.Conv2d(in_channel, inner_channel, kernel_size=3, padding=1)->[(ResnetBlock->SelfAttention)*(res_blocks-1)->Downsample]*[len(channel_mults)-1]+[(ResnetBlock->SelfAttention)*(res_blocks-1)]}
+->(ResnetBlock->SelfAttention)*2
+->{{[(ResnetBlock->SelfAttention)*res_blocks]->Upsample}*[range(num_mults)-1]->[(ResnetBlock->SelfAttention)*res_blocks]->final_conv}
