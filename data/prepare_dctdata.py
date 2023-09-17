@@ -22,7 +22,7 @@ def resize_and_convert(img, size, resample):
     return img
 
 
-def image_convert_bytes(img, mode):
+def image_convert_bytes(img):
     buffer = BytesIO()
     img.save(buffer, format='png')
     return buffer.getvalue()
